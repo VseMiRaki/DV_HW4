@@ -108,14 +108,8 @@ def tSNE(X : np.ndarray, dim=2, perplexity=20.0):
             print("Iteration %d: error is %f" % (t + 1, np.sum(P * np.log(P / Q))))
 
         if t > 50:
-            alpha = 1
-            eta = 1000
-        if t > 100:
-            alpha = 0.5
-            eta = 500
-        if t > 200:
-            alpha = 0.2
-            eta = 200
+            alpha = .6
+            eta = 7000
     return Y
 
 
