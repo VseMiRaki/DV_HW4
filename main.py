@@ -81,35 +81,39 @@ def getGrad(P : np.ndarray, Q : np.ndarray, Y : np.ndarray):
     return gradY
 
 
-
-def tSNE(X : np.ndarray, dim=2, perplexity=20.0):
+def tSNE(X : np.ndarray, dim=2, perplexity=15.0):
     deltaY = 0
-    eta = 2000
+    eta = 1000
     alpha = 0.7
+    dY = np.zeros((X.shape[0], dim))
+    deltaY = np.zeros((X.shape[0], dim))
     
     P = getP(X, perplexity)
-    P = (P + P.T) / X.shape[0] / 2
+    P = (P + P.T) / X.shape[0] * 2
     P = np.maximum(P, 1e-12)
 
     Y = multivariate_normal.rvs(np.zeros(dim), np.identity(dim) * 1e-4, X.shape[0])
 
-    for t in range(500):
+    for t in range(1000):
         Q = getQ(Y)
         Q /= X.shape[0]
         Q = np.maximum(Q, 1e-12)
 
         dY = getGrad(P, Q, Y)
 
-        newY = Y - eta * dY + alpha * deltaY
-        deltaY = newY - Y
-        Y = newY
+        deltaY = alpha * deltaY - eta * dY
+        Y = Y + deltaY
 
         if (t + 1) % 10 == 0:
             print("Iteration %d: error is %f" % (t + 1, np.sum(P * np.log(P / Q))))
 
-        if t > 50:
-            alpha = .6
-            eta = 7000
+        if t == 100:
+            P = P / 2.
+
+        if t == 200:
+            P = P / 2.
+            eta = 800
+
     return Y
 
 
@@ -131,6 +135,7 @@ for g in np.unique(group):
     ix = np.where(group == g)
     ax.scatter(scatter_x[ix], scatter_y[ix], c = cdict[g], label = g, s = 100)
 ax.legend()
+plt.savefig('result.jpg')
 plt.show()
 
 
